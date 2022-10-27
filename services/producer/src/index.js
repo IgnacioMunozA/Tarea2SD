@@ -1,36 +1,18 @@
-import Kafka from 'node-rdkafka';
-//const { Kafka }= require ('kafkajs')
-import express from "express";
-import bodyParser from 'body-parser';
+//import Kafka from 'node-rdkafka'
+const {Kafka}=require ('kafkajs');
+const express=require ("express");
+const bodyParser =require ("body-parser");
+const dotenv=require("dotenv");
+dotenv.config();
 
 const app= express();
-const port= 3000;
+const port= process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
-function registromiembro(data){
-    var producer= new Kafka.Producer({
-        'metadata.broker.list':'localhost:9092',
-        'dr_cb': true
-    });
-    var topic= 'miembros';
 
-    producer.on('ready',function(arg){
-        var value= Buffer.from(JSON.stringify(data));
-        if(data.tipo === 1){
-            var partition=1;
-        }else{
-            var partition=2;
-        }
-        var headers= [{header: "registro usuario"}]
-
-        console.log(producer.produce(topic,partition,value,null,Date.now(),"",headers))
-    });
-    producer.connect();
-}
-
-function nuevaventa(data){
+async function nuevaventa(data){
     var producer= new Kafka.Producer({
         'metadata.broker.list':'localhost:9092',
         'dr_cb':true
@@ -45,11 +27,11 @@ function nuevaventa(data){
 
         console.log(producer.produce(topic,partition,value,null,Date.now(),"",headers))
     });
-
+    console.log("Miembro registrado" )
     producer.connect();
 }
 
-function aviso(data){
+async function aviso(data){
     var producer= new Kafka.Producer({
         'metadata.broker.list':'localhost:9092',
         'dr_cb':true
@@ -67,11 +49,54 @@ function aviso(data){
             var headers= [{header: "ubicacion registrada"}]
         }
         console.log(producer.produce(topic,partition,value,null,Date.now(),"",headers))
+        console.log("Usuario localizado %d",value)
     });
 
     producer.connect();
 }
 
+const kafka= new Kafka({
+    clientId: "my-app",
+    brokers:["kafka:9092"]
+});
+app.post('/registro',(req,res)=>{
+    (async () =>{
+    const producer= kafka.producer();
+    await producer.connect();
+    const miembro={
+        nombre: req.body.nombre,
+        apellido: req.body.apellido,
+        rut: req.body.rut,
+        correo: req.body.correo,
+        patente: req.body.patente,
+        tipo: req.body.tipo
+    }
+    var value={}
+    value=JSON.stringify(miembro);
+    if(miembro["tipo"]== 1){
+        const topicMessages=[
+            {
+                topic: 'miembros',
+                partition: 1,
+                messages:[{value: JSON.stringify(miembro),partition:1}]
+            },
+        ]
+        await producer.sendBatch({topicMessages})
+    }else{
+        const topicMessages=[
+            {
+                topic:'miembros',
+                partition:2,
+                messages:[{value: JSON.stringify(miembro),partition:2}]
+            },
+        ]
+        await producer.sendBatch({topicMessages})
+    }
+
+    await producer.disconnect();
+    res.status(200)
+})();
+});
 
 app.post('/venta', (req,res) =>{
     console.log(req.body)
@@ -86,11 +111,7 @@ app.post('/venta', (req,res) =>{
     res.status(200)
 })
 
-app.post('/registro',(req,res)=>{
-    console.log(req.body)
-    registromiembro(req.body)
-    res.status(200)
-})
+
 
 app.post('/ubicacion',(req,res)=>{
     console.log(req.body)
