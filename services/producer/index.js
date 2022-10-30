@@ -1,11 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+
 const bodyParser = require("body-parser");
 const { Kafka } = require("kafkajs");
 
 const app = express();
-dotenv.config();
+
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -101,12 +101,12 @@ app.post("/registro", (req, res) => {
         patente: patente,
         tipo: tipo
       }
-      value = JSON.stringify(venta);
+      value = JSON.stringify(usuario);
       if(usuario["tipo"== 1]){
         const topicMessages = [
           {
             topic: 'miembros',
-            messages: [{value: JSON.stringify(ventas), partition: 1}]
+            messages: [{value: JSON.stringify(usuario), partition: 1}]
           },
         ]
         await producer.sendBatch({ topicMessages }) 
@@ -114,7 +114,7 @@ app.post("/registro", (req, res) => {
         const topicMessages = [
           {
             topic: 'miembros',
-            messages: [{value: JSON.stringify(ventas),partition: 0}]
+            messages: [{value: JSON.stringify(usuario),partition: 0}]
           },
         ]
         await producer.sendBatch({ topicMessages }) 

@@ -1,11 +1,11 @@
 const express = require('express')
 const cors = require('cors')
-const dotenv = require('dotenv')
+
 const bodyParser = require('body-parser')
 const { Kafka } = require("kafkajs");
 
 const app = express()
-dotenv.config()
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));

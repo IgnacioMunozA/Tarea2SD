@@ -1,11 +1,11 @@
 const express = require('express')
 const cors = require('cors')
-const dotenv = require('dotenv')
+
 const bodyParser = require('body-parser')
 const { Kafka } = require("kafkajs");
 
 const app = express()
-dotenv.config()
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -20,11 +20,9 @@ var kafka = new Kafka({
   brokers: ["kafka:9092"],
 });
 
-var total=0
-var cliente= 0
-var promedio=0
-
-
+var clientes= new Array()
+var ventas= new Array()
+var clientescarro= []
 
 const main = async () => {
   const consumer = kafka.consumer({ groupId: "ventas" });
@@ -36,28 +34,23 @@ setInterval(async function(){
         value=message.value
         json= JSON.parse(value)
 
-        if(cliente != 0){
-            promedio=total/cliente
-            console.log(`El usuario vendió ${promedio} sopaipillas`)
-        }
-        total=0
-        cliente=0
-        promedio=0
+        const aux= json.cantidad
+        const cliente= json["cliente"]
+        const patente= json["patente"]
 
-    },
+        if(ventas.includes(json.patente)){
+          ventas[patente]+=1
+        }else if(!clientes.includes(json.cliente)){
+          clientes.push(patente)
+          clientes[patente]+=1
+        }else if(!ventas.includes(json.patente)){
+          ventas+=1
+          ventas.push(patente)
+        }
+      },
   })
 },10*1000)
-var data= JSON.parse(message.value.toString())
-total += data.cantidad
-cliente += 1
 };
-
-app.get('/ventasregistro',(req,res)=>{
-    console.log(`Ventas: ${ventascarro}`)
-    console.log(`Clientes: ${miembroscarro}`)
-    res.send(ventascarro)
-    res.send(miembroscarro)
-})
 
 
 

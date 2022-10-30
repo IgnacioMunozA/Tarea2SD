@@ -1,104 +1,80 @@
-version: '3.1'
-
-networks:
-  lared:
-    driver: bridge
-
+version: "3.8"
 services:
-  producer:
-    container_name: productores
-    build: ./services/producer
-    depends_on:
-       - zookeeper
-       - kafka 
-       - members_consumer
-
-    networks:
-       - lared
-    ports:
-      - "3000:3000"
-        
-  members_consumer:
-    container_name: consumermiembros
-    build: ./services/Miembros
-    networks:
-      - lared
-    depends_on:
-       - zookeeper
-       - kafka 
-
-    # volumes:
-    #   - ./server/error:/usr/src/app
-
-    ports:
-      - "8000:8000"
-
-  sales_consumer:
-    container_name: consumerventas
-    build: ./services/Ventas
-    networks:
-      - lared
-    depends_on:
-       - zookeeper
-       - kafka 
-
-    # volumes:
-    #   - ./server/error:/usr/src/app
-
-    ports:
-      - "8001:8000" 
-
-  stock_consumer:
-    container_name: consumerstock
-    build: ./services/Stock
-    networks:
-      - lared
-    depends_on:
-       - zookeeper
-       - kafka 
-    environment: 
-      - kafka
-    # volumes:
-    #   - ./server/error:/usr/src/app
-
-    ports:
-      - "8002:8000"
-
-  ubication_consumer:
-    container_name: consumerubicaciones
-    build: ./services/Ubicaciones
-    networks:
-      - lared
-    depends_on:
-       - zookeeper
-       - kafka 
-    ports:
-      - "8003:8000"
-
   zookeeper:
-    container_name: elzookeeper
-    image: 'bitnami/zookeeper:latest'
+    image: 'bitnami/zookeeper:3.8.0'
+    restart: always
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
-    networks:
-      - lared
     ports:
       - 2181:2181
-      - 2888:2888
-      - 3888:3888
-    
+
   kafka:
-    container_name: elkafka
-    image: 'bitnami/kafka:latest'
-    networks:
-     - lared
+    image: 'bitnami/kafka:2.8.1'
+    restart: always
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"   
-      KAFKA_ADVERTISED_PORT: "9092"
       ALLOW_PLAINTEXT_LISTENER: "yes"
       KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper:2181"
-
+      #KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
     ports:
       - 9092:9092
+
+  producer:
+    build:
+      context: ./services/producer/
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+    ports:
+      - 3000:3000
+
+  miembros:
+    build:
+      context: ./services/Miembros/
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+      - producer
+    ports:
+      - 8000:3000
+
+  ventas:
+    build:
+      context: ./services/Ventas/
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+      - producer
+    ports:
+      - 8001:3000
+
+  ubicaciones:
+    build:
+      context: ./services/Ubicaciones/
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+      - producer
+    ports:
+      - 8002:3000 
+  stock:
+    build:
+      context: ./services/Stock/
+      dockerfile: Dockerfile 
+    restart: always
+    depends_on:
+      - kafka
+      - zookeeper
+      - producer
+    ports:
+      - 8003:3000     
