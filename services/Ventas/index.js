@@ -50,6 +50,9 @@ setInterval(async function(){
       },
   })
 },10*1000)
+
+console.log(`Ventas: ${ventas}.`)
+console.log(`Clientes: ${clientes}`)
 };
 
 
