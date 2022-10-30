@@ -1,19 +1,28 @@
-# Kafka NodeJS Example
 
-## Introduction
-This repository showcases a simple example of using Kafka with NodeJS. In this example the producer push a testing message onto the test_topic (in Kafka) while the consumer consumes the message and print it.
+## Instrucciones
+cd Tarea2SD
 
-## Instructions
-This demonstration assumes you already have `docker` and `docker-compose` installed. The steps are as follows:
-
-1) Using `docker-compose`, spin up all containers (Zookeeper, Kafka, Producer and Consumer):
+1) docker-compose up 
 ```
-docker-compose up
-```
-
 ## Para levantar topicos
 
-docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 3 --config retention.ms=259200000 --topic auth
+2) docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 3 --config retention.ms=259200000 --topic nombretopico
+
+# Hay que crear los 3 topicos
 
 ## Para listar topicos
-docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+3) docker-compose exec kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+#instalar dependencias de npm
+npm i express
+npm i cors
+npm i dotenv
+npm i kafkajs
+npm i body-parser
+
+
+4) ejecutar el productor
+
+node ./services/producer/index.js
+
+5) realizar solicitudes POST en localhost:3000
