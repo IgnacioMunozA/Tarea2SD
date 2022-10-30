@@ -27,9 +27,9 @@ var miembroscarro= new Array()
 
 
 const main = async () => {
-  const consumer = kafka.consumer({ groupId: "ventas" });
+  const consumer = kafka.consumer({ groupId: "stock" });
   await consumer.connect();
-  await consumer.subscribe({ topic: "ventas", fromBeginning: true });
+  await consumer.subscribe({ topic: "stock", fromBeginning: true });
 
   await consumer.run({
     eachMessage: async({topic, partition, message})=>{

@@ -41,11 +41,11 @@ app.post("/ventas", (req, res) => {
         const topicMessages = [
           {
             topic: 'ventas',
-            messages: [{value: JSON.stringify(ventas)}]
+            messages: [{value: JSON.stringify(venta)}]
           },
         ]
         await producer.sendBatch({ topicMessages }) 
-
+        console.log("Venta registrada")
       await producer.disconnect();
 
       res.json("Se registró la venta");  
